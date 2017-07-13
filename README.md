@@ -1,2 +1,3 @@
 # py-oeis
-Access OEIS sequences in Python
+
+A Python library to access the OEIS.
