@@ -12,6 +12,14 @@ v0.1
 import requests
 
 
+class NegativeIndexError(IndexError):
+    """Raised when a negative index is passed."""
+
+
+class IndexTooHighError(IndexError):
+    """Raised when an index too high to handle is passed."""
+
+
 class Sequence(object):
     """An object to represent a single OEIS sequence.
 
@@ -23,10 +31,10 @@ class Sequence(object):
         """See class docstring for details."""
 
         self.seq_id = seq_id
-        self.values = requests.get('https://oeis.org/A{0:d}/b{0:d}.txt'.format(seq_id))
-        self.info = requests.get(
-            'https://oeis.org/search?fmt=json&q=id:A{:d}'.format(
-                seq_id)).json()['results'][0]
+        self.values = requests.get(
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(seq_id))
+        self.info = requests.get('https://oeis.org/search?fmt=json&q=id:A{:d}'.
+                                 format(seq_id)).json()['results'][0]
 
         self.name = self.info['name']
         self.formula = '\n'.join(self.info['formula'])
@@ -35,8 +43,8 @@ class Sequence(object):
         self.author = self.info['author']
         self.created = self.info['created']
 
-    def get_element(self, n):
-        """Get the nth element of the sequence. 0-indexed. Throws an exception
+    def get_element(self, index):
+        """Get the nth element of the sequence. 0-indexed. Raises an exception
         if the number is too high.
 
         Positional arguments:
@@ -44,7 +52,15 @@ class Sequence(object):
 
         Returns the element of the sequence at index n."""
 
+        if index < 0:
+            raise NegativeIndexError()
+
         try:
-            return self.sequence[n]
+            return self.sequence[index]
         except IndexError:
-            return int(self.values.split('\n')[n].split()[1])
+            pass
+
+        try:
+            return int(self.values.split('\n')[index].split()[1])
+        except IndexError:
+            raise IndexTooHighError
