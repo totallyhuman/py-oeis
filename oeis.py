@@ -9,6 +9,8 @@ Sumant Bhaskaruni
 v0.1
 """
 
+__version__ = '0.1'
+
 import requests
 
 
@@ -36,25 +38,29 @@ class Sequence(object):
         self.name = info['name']
         self.formula = '\n'.join(info['formula'])
         self.sequence = list(map(int, info['data'].split(',')))
-        self.comments = '\n'.join(info['comment'])
+        self.comments = '\n'.join(info.get('comment', ''))
         self.author = info['author']
         self.created = info['created']
+        # TODO: parse the date into a better format
 
     def get_element(self, index):
         """Get the nth element of the sequence. 0-indexed. Raises an exception
-        if the number is too high.
+        if the number is negative or too high.
 
         Positional arguments:
-            n (int): the index of the element
+            index (int): the index of the element
 
-        Returns the element of the sequence at index n."""
+        Returns the element of the sequence at index n.
+        """
 
         if index < 0:
+            # sequences don't have negative indices, ya silly goofball
             raise NegativeIndexError()
 
         try:
             return self.sequence[index]
         except IndexError:
+            # fall back to scraping
             pass
 
         try:
@@ -62,4 +68,5 @@ class Sequence(object):
                 'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
             return int(values.split('\n')[index].split()[1])
         except IndexError:
+            # OEIS only holds values up to a certain limit
             raise IndexTooHighError()
