@@ -47,16 +47,14 @@ class Sequence(object):
         self.seq_id = info['number']
         self.name = info['name']
         self.formula = '\n'.join(info['formula'])
-        self.sequence = list(map(int, info['data'].split(',')))
         self.comments = '\n'.join(info.get('comment', ''))
         self.author = info['author']
         self.created = pendulum.parse(
             info['created']).astimezone('utc').to_cookie_string()
 
-    def __len__(self):
-        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n')
-        return len(values.split('\n'))
+        seq_page = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n').split('\n')
+        self.sequence = [int(item.split()[1]) for item in seq_page]
 
     def __contains__(self, item):
         return self.contains(item)
@@ -68,9 +66,11 @@ class Sequence(object):
             return self.subsequence(key.start, key.stop, key.step)
 
     def __iter__(self):
-        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n')
-        return (int(value.split()[1]) for value in values.split('\n'))
+        for value in self.sequence:
+            yield value
+
+    def __len__(self):
+        return len(self.sequence)
 
     def contains(self, item):
         """Check if the sequence contains the specified item. Note that this
@@ -82,16 +82,7 @@ class Sequence(object):
         Returns whether the sequence contains item.
         """
 
-        if item in self.sequence:
-            return True
-
-        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n')
-        for value in values.split('\n'):
-            if int(value.split()[1]) == item:
-                return True
-
-        return False
+        return item in self.sequence
 
     def find(self, item, instances = None):
         """Find specified number of instances of the specified item. Note that
@@ -117,15 +108,6 @@ class Sequence(object):
             if value == item:
                 result.append(index)
 
-        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n')
-        for index, value in enumerate(values.split('\n')):
-            if len(result) == instances:
-                return result
-
-            if int(value.split()[1]) == item:
-                result.append(index)
-
         return result
 
     def nth_term(self, index):
@@ -143,21 +125,13 @@ class Sequence(object):
             raise NegativeIndexError(
                 'The index passed ({:d}) is negative.'.format(index))
 
-        try:
-            return self.sequence[index]
-        except IndexError:
-            # fall back to scraping
-            pass
-
         if index > len(self):
             # OEIS only holds values up to a certain limit
             raise IndexTooHighError('{0:d} is higher than the amount of '
                                     'values OEIS holds ({1:d}).'.format(
                                         index, len(self)))
 
-        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n')
-        return int(values.split('\n')[index].split()[1])
+        return self.sequence[index]
 
     def subsequence(self, start = None, stop = None, step = None):
         """Get a subsequence of the sequence. 0-indexed. Raises an exception if
@@ -186,18 +160,8 @@ class Sequence(object):
                 'The index passed ({:d}) is negative.'.format(index))
 
         if start > len(self.sequence) or stop > len(self.sequence):
-            pass
-        else:
-            return self.sequence[start:stop:step]
-
-        if start > len(self) or stop > len(self):
             raise IndexTooHighError('{0:d} is higher than the amount of '
-                                    'values OEIS holds ({1:d}).'.format(
-                                        index, len(self)))
+            'values OEIS holds ({1:d}).'.format(
+            index, len(self)))
 
-        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n')
-        return [
-            int(value.split()[1])
-            for value in values.split('\n')[start:stop:step]
-        ]
+        return self.sequence[start:stop:step]
