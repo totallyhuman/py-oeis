@@ -3,7 +3,7 @@
 """
 py-oeis
 
-A Python library to access the OEIS.
+A Python library to access the OEIS (Online Encyclopedia of Integer Sequences).
 
 Sumant Bhaskaruni
 v0.1
@@ -27,7 +27,16 @@ class Sequence(object):
     """An object to represent a single OEIS sequence.
 
     Initializer arguments:
-        number (int): The OEIS sequence ID
+        number (int): the OEIS sequence ID
+
+    Instance attributes:
+        seq_id (int): the OEIS sequence ID
+        name (str): the name of the sequence
+        formula (str): the text of the 'Formula' section on OEIS
+        sequence (list): the first few values of the sequence
+        comments (str): the text of the 'Comments' section on OEIS
+        author (str): the author of the sequence
+        created (str): when the sequence was created
     """
 
     def __init__(self, seq_id):
@@ -49,6 +58,9 @@ class Sequence(object):
             'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
         return len(values.split('\n'))
 
+    def __contains__(self, item):
+        return self.contains(item)
+
     def __getitem__(self, key):
         if isinstance(key, int):
             return self.nth_term(key)
@@ -59,6 +71,62 @@ class Sequence(object):
         values = requests.get(
             'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
         return (int(value.split()[1]) for value in values.split('\n'))
+
+    def contains(self, item):
+        """Check if the sequence contains the specified item. Note that this
+        has the limit of the amount of numbers that OEIS hols.
+
+        Positional arguments:
+            item (int): the item to check for
+
+        Returns whether the sequence contains item.
+        """
+
+        if item in self.sequence:
+            return True
+
+        values = requests.get(
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
+        for value in values.split('\n'):
+            if int(value.split()[1]) == item:
+                return True
+
+        return False
+
+    def find(self, item, instances = None):
+        """Find specified number of instances of the specified item. Note that
+        this has the limit of the amount of numbers that OEIS hols.
+
+        Positional arguments:
+            item (int): the item to find
+            instances (int): the number of instances of item to find
+                             (default: 1)
+
+        Returns a list of sequence indices.
+        """
+
+        if instances is None:
+            instances = 1
+
+        result = []
+
+        for index, value in enumerate(self.sequence):
+            if len(result) == instances:
+                return result
+
+            if value == item:
+                result.append(index)
+
+        values = requests.get(
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
+        for index, value in enumerate(values.split('\n')):
+            if len(result) == instances:
+                return result
+
+            if int(value.split()[1]) == item:
+                result.append(index)
+
+        return result
 
     def nth_term(self, index):
         """Get the nth element of the sequence. 0-indexed. Raises an exception
@@ -89,8 +157,8 @@ class Sequence(object):
             raise IndexTooHighError()
 
     def subsequence(self, start = None, stop = None, step = None):
-        """Get a subsequence of the sequence. 0-indexed. Raises and exception
-        if either of the indexes are negative or too high.
+        """Get a subsequence of the sequence. 0-indexed. Raises an exception if
+        either of the indices are negative or too high.
 
         Positional arguments:
             start (int): the starting index of the subsequence (default: 0)

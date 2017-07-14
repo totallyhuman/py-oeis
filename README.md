@@ -1,6 +1,7 @@
 # py-oeis
 
-A Python library to access the OEIS.
+A Python library to access the
+[OEIS (Online Encyclopedia of Integer Sequences)](https://oeis.org).
 
-Depends on [`requests`](https://github.com/requests/requests) and
-[`pendulum`](https://github.com/sdispater/pendulum).
+Depends on [`pendulum`](https://github.com/sdispater/pendulum) and
+[`requests`](https://github.com/requests/requests).
