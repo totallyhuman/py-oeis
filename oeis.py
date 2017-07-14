@@ -33,7 +33,7 @@ class Sequence(object):
         seq_id (int): the OEIS sequence ID
         name (str): the name of the sequence
         formula (str): the text of the 'Formula' section on OEIS
-        sequence (list): the first few values of the sequence
+        sequence (list): the values of the sequence that OEIS holds
         comments (str): the text of the 'Comments' section on OEIS
         author (str): the author of the sequence
         created (str): when the sequence was created
@@ -110,9 +110,31 @@ class Sequence(object):
 
         return result
 
+    def next(self, item):
+        """Find the number that comes after the specified number in the
+        sequence.
+
+        Positional arguments:
+            item (int): the number to find the number after
+
+        Returns the number after item in the sequence.
+        """
+        return self.sequence[self.find(item) + 1]
+
+    def prev(self, item):
+        """Find the number that comes before the specified number in the
+        sequence.
+
+        Positional arguments:
+            item (int): the number to find the number before
+
+        Returns the number before item in the sequence.
+        """
+        return self.sequence[self.find(item) - 1]
+
     def nth_term(self, index):
         """Get the nth element of the sequence. 0-indexed. Raises an exception
-        if the number is negative or too high.
+        if the index is negative or too high.
 
         Positional arguments:
             index (int): the index of the element
@@ -159,7 +181,7 @@ class Sequence(object):
             raise NegativeIndexError(
                 'The index passed ({:d}) is negative.'.format(index))
 
-        if start > len(self.sequence) or stop > len(self.sequence):
+        if start > len(self) or stop > len(self):
             raise IndexTooHighError('{0:d} is higher than the amount of '
                 'values OEIS holds ({1:d}).'.format(
                 index, len(self)))
