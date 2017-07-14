@@ -161,7 +161,7 @@ class Sequence(object):
 
         if start > len(self.sequence) or stop > len(self.sequence):
             raise IndexTooHighError('{0:d} is higher than the amount of '
-            'values OEIS holds ({1:d}).'.format(
-            index, len(self)))
+                'values OEIS holds ({1:d}).'.format(
+                index, len(self)))
 
         return self.sequence[start:stop:step]
