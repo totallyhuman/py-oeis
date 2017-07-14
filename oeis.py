@@ -54,8 +54,8 @@ class Sequence(object):
             info['created']).astimezone('utc').to_cookie_string()
 
     def __len__(self):
-        values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n')
         return len(values.split('\n'))
 
     def __contains__(self, item):
@@ -68,8 +68,8 @@ class Sequence(object):
             return self.subsequence(key.start, key.stop, key.step)
 
     def __iter__(self):
-        values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n')
         return (int(value.split()[1]) for value in values.split('\n'))
 
     def contains(self, item):
@@ -85,8 +85,8 @@ class Sequence(object):
         if item in self.sequence:
             return True
 
-        values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n')
         for value in values.split('\n'):
             if int(value.split()[1]) == item:
                 return True
@@ -117,8 +117,8 @@ class Sequence(object):
             if value == item:
                 result.append(index)
 
-        values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n')
         for index, value in enumerate(values.split('\n')):
             if len(result) == instances:
                 return result
@@ -155,8 +155,8 @@ class Sequence(object):
                                     'values OEIS holds ({1:d}).'.format(
                                         index, len(self)))
 
-        values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n')
         return int(values.split('\n')[index].split()[1])
 
     def subsequence(self, start = None, stop = None, step = None):
@@ -185,16 +185,19 @@ class Sequence(object):
             raise NegativeIndexError(
                 'The index passed ({:d}) is negative.'.format(index))
 
-        try:
-            return self.sequence[start:stop:step]
-        except IndexError:
+        if start > len(self.sequence) or stop > len(self.sequence):
             pass
+        else:
+            return self.sequence[start:stop:step]
 
         if start > len(self) or stop > len(self):
             raise IndexTooHighError('{0:d} is higher than the amount of '
                                     'values OEIS holds ({1:d}).'.format(
                                         index, len(self)))
 
-        values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
-        return [int(value.split()[1]) for value in values[start:stop:step]]
+        values = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n')
+        return [
+            int(value.split()[1])
+            for value in values.split('\n')[start:stop:step]
+        ]
