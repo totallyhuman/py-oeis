@@ -55,7 +55,7 @@ class Sequence(object):
 
     def __len__(self):
         values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
         return len(values.split('\n'))
 
     def __contains__(self, item):
@@ -69,7 +69,7 @@ class Sequence(object):
 
     def __iter__(self):
         values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
         return (int(value.split()[1]) for value in values.split('\n'))
 
     def contains(self, item):
@@ -86,7 +86,7 @@ class Sequence(object):
             return True
 
         values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
         for value in values.split('\n'):
             if int(value.split()[1]) == item:
                 return True
@@ -118,7 +118,7 @@ class Sequence(object):
                 result.append(index)
 
         values = requests.get(
-            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
         for index, value in enumerate(values.split('\n')):
             if len(result) == instances:
                 return result
@@ -140,7 +140,8 @@ class Sequence(object):
 
         if index < 0:
             # sequences don't have negative indices, ya silly goofball
-            raise NegativeIndexError()
+            raise NegativeIndexError(
+                'The index passed ({:d}) is negative.'.format(index))
 
         try:
             return self.sequence[index]
@@ -148,13 +149,15 @@ class Sequence(object):
             # fall back to scraping
             pass
 
-        try:
-            values = requests.get(
-                'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
-            return int(values.split('\n')[index].split()[1])
-        except IndexError:
+        if index > len(self):
             # OEIS only holds values up to a certain limit
-            raise IndexTooHighError()
+            raise IndexTooHighError('{0:d} is higher than the amount of '
+                                    'values OEIS holds ({1:d}).'.format(
+                                        index, len(self)))
+
+        values = requests.get(
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        return int(values.split('\n')[index].split()[1])
 
     def subsequence(self, start = None, stop = None, step = None):
         """Get a subsequence of the sequence. 0-indexed. Raises an exception if
@@ -165,6 +168,8 @@ class Sequence(object):
             stop (int): the ending index of the subsequence
                         (default: len(sequence))
             step (int): the amount by which the index increases (default: 1)
+
+        Returns a list of sequence items.
         """
 
         if start is None:
@@ -177,16 +182,19 @@ class Sequence(object):
             step = 1
 
         if start < 0 or stop < 0:
-            raise NegativeIndexError()
+            raise NegativeIndexError(
+                'The index passed ({:d}) is negative.'.format(index))
 
         try:
             return self.sequence[start:stop:step]
         except IndexError:
             pass
 
-        try:
-            values = requests.get(
-                'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id))
-            return [int(value.split()[1]) for value in values[start:stop:step]]
-        except IndexError:
-            raise IndexTooHighError()
+        if start > len(self) or stop > len(self):
+            raise IndexTooHighError('{0:d} is higher than the amount of '
+                                    'values OEIS holds ({1:d}).'.format(
+                                        index, len(self)))
+
+        values = requests.get(
+            'https://oeis.org/A{0:d}/b{0:d}.txt'.format(self.seq_id)).text
+        return [int(value.split()[1]) for value in values[start:stop:step]]
