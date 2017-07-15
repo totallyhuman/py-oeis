@@ -33,7 +33,7 @@ class Sequence(object):
         seq_id (int): the OEIS sequence ID
         name (str): the name of the sequence
         formula (str): the text of the 'Formula' section on OEIS
-        sequence (list): the values of the sequence that OEIS holds
+        sequence (list): the first few values of the sequence
         comments (str): the text of the 'Comments' section on OEIS
         author (str): the author of the sequence
         created (str): when the sequence was created
@@ -47,14 +47,11 @@ class Sequence(object):
         self.seq_id = info['number']
         self.name = info['name']
         self.formula = '\n'.join(info['formula'])
+        self.sequence = list(map(int, info['data'].split(',')))
         self.comments = '\n'.join(info.get('comment', ''))
         self.author = info['author']
         self.created = pendulum.parse(
             info['created']).astimezone('utc').to_cookie_string()
-
-        seq_page = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
-            self.seq_id)).text.rstrip('\n').split('\n')
-        self.sequence = [int(item.split()[1]) for item in seq_page]
 
     def __contains__(self, item):
         return self.contains(item)
@@ -72,9 +69,17 @@ class Sequence(object):
     def __len__(self):
         return len(self.sequence)
 
+    def fetch_sequence(self):
+        """Fetch all the values of the sequence from OEIS. Only do this if you
+        want a *lot* of values."""
+
+        seq_page = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
+            self.seq_id)).text.rstrip('\n').split('\n')
+        self.sequence = [int(item.split()[1]) for item in seq_page]
+
     def contains(self, item):
         """Check if the sequence contains the specified item. Note that this
-        has the limit of the amount of numbers that OEIS hols.
+        has the limit of the amount of numbers that OEIS holds.
 
         Positional arguments:
             item (int): the item to check for
@@ -183,7 +188,39 @@ class Sequence(object):
 
         if start > len(self) or stop > len(self):
             raise IndexTooHighError('{0:d} is higher than the amount of '
-                'values OEIS holds ({1:d}).'.format(
-                index, len(self)))
+                                    'values OEIS holds ({1:d}).'.format(
+                                        index, len(self)))
 
         return self.sequence[start:stop:step]
+
+
+def query(terms, start = None, results = None):
+    """Search the OEIS database for sequences that contain a specific set of
+    terms.
+
+    Positional arguments:
+        terms (list): the terms to search for
+        start (int): how far down the list of results to return sequences from
+                     (default: 0)
+        results (int): how many sequences to return (default: 10)
+
+    Returns a list of Sequence objects.
+    """
+
+    terms = ','.join(map(str, terms))
+
+    if start is None:
+        start = 0
+
+    if results is None:
+        results = 10
+
+    result = []
+    search = requests.get(
+        'https://oeis.org/search?fmt=json&q={0:s}&start={1:d}'.format(
+            terms, start)).json()['results']
+
+    for seq in search[:results]:  # search results :P
+        result.append(Sequence(seq['number']))
+
+    return result
