@@ -1,6 +1,6 @@
 # py-oeis
 
-A Python library to access the
+A Python 3 library to access the
 [OEIS (Online Encyclopedia of Integer Sequences)](https://oeis.org).
 
 Depends on [`pendulum`](https://github.com/sdispater/pendulum) and
