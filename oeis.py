@@ -44,14 +44,26 @@ class Sequence(object):
 
         info = requests.get('https://oeis.org/search?fmt=json&q=id:A{:d}'.
                             format(seq_id)).json()['results'][0]
+
         self.seq_id = info['number']
         self.name = info['name']
-        self.formula = '\n'.join(info['formula'])
         self.sequence = list(map(int, info['data'].split(',')))
-        self.comments = '\n'.join(info.get('comment', ''))
-        self.author = info['author']
-        self.created = pendulum.parse(
-            info['created']).astimezone('utc').to_cookie_string()
+
+        self.info = {
+            'formula':
+            '\n'.join(info.get('formula', '')),
+            'comments':
+            '\n'.join(info.get('comment', '')),
+            'keywords':
+            info.get('keyword', '').split(','),
+            'author':
+            info.get('author', '').split(', ')[0][1:-1],
+            'created':
+            pendulum.parse(
+                info['created']).astimezone('utc').to_cookie_string(),
+            'url':
+            'https://oeis.org/A{:06d}'.format(info['number'])
+        }
 
     def __contains__(self, item):
         return self.contains(item)
@@ -68,6 +80,20 @@ class Sequence(object):
 
     def __len__(self):
         return len(self.sequence)
+
+    def __str__(self):
+        terms = ', '.join(map(str, self.sequence[:15]))
+        keywords = ''
+        for key in self.info['keywords']:
+            keywords += '[{:s}] '.format(key)
+
+        return ('A{0:06d}: {1:s}\n'
+                'Terms: {2:s}...\n'
+                'Created: {3:s}\n'
+                'Keywords: {4:s}\n'
+                'Author: {5:s}').format(self.seq_id, self.name, terms,
+                                        self.info['created'], keywords,
+                                        self.info['author'])
 
     def __repr__(self):
         return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id, self.name)
