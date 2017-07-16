@@ -69,6 +69,9 @@ class Sequence(object):
     def __len__(self):
         return len(self.sequence)
 
+    def __repr__(self):
+        return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id, self.name)
+
     def fetch_sequence(self):
         """Fetch all the values of the sequence from OEIS. Only do this if you
         want a *lot* of values."""
@@ -155,7 +158,7 @@ class Sequence(object):
         if index > len(self):
             # OEIS only holds values up to a certain limit
             raise IndexTooHighError('{0:d} is higher than the amount of '
-                                    'values OEIS holds ({1:d}).'.format(
+                                    'values fetched ({1:d}).'.format(
                                         index, len(self)))
 
         return self.sequence[index]
@@ -182,14 +185,23 @@ class Sequence(object):
         if step is None:
             step = 1
 
-        if start < 0 or stop < 0:
+        if start < 0:
             raise NegativeIndexError(
-                'The index passed ({:d}) is negative.'.format(index))
+                'The index passed ({:d}) is negative.'.format(start))
 
-        if start > len(self) or stop > len(self):
+        if stop < 0:
+            raise NegativeIndexError(
+                'The index passed ({:d}) is negative.'.format(stop))
+
+        if start > len(self):
             raise IndexTooHighError('{0:d} is higher than the amount of '
-                                    'values OEIS holds ({1:d}).'.format(
-                                        index, len(self)))
+                                    'values fetched ({1:d}).'.format(
+                                        start, len(self)))
+
+        if stop > len(self):
+            raise IndexTooHighError('{0:d} is higher than the amount of '
+                                    'values fetched ({1:d}).'.format(
+                                        stop, len(self)))
 
         return self.sequence[start:stop:step]
 
