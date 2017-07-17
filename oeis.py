@@ -32,11 +32,14 @@ class Sequence(object):
     Instance attributes:
         seq_id (int): the OEIS sequence ID
         name (str): the name of the sequence
-        formula (str): the text of the 'Formula' section on OEIS
         sequence (list): the first few values of the sequence
-        comments (str): the text of the 'Comments' section on OEIS
-        author (str): the author of the sequence
-        created (str): when the sequence was created
+        info (dict): information pertaining to the sequence including:
+            formula (str): the text of the 'Formula' section on OEIS
+            comments (str): the text of the 'Comments' section on OEIS
+            keywords (list): the keywords (tags) of the sequence
+            author (str): the author of the sequence
+            created (str): when the sequence was created
+            url (str): the URL of the sequence on OEIS
     """
 
     def __init__(self, seq_id):
