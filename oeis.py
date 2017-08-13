@@ -15,6 +15,10 @@ import pendulum
 import requests
 
 
+class NonExistentSequence(LookupError):
+    """Raised when a sequence with the ID passed does not exist."""
+
+
 class NegativeIndexError(IndexError):
     """Raised when a negative index is passed."""
 
@@ -46,7 +50,13 @@ class Sequence(object):
         """See class docstring for details."""
 
         info = requests.get('https://oeis.org/search?fmt=json&q=id:A{:d}'.
-                            format(seq_id)).json()['results'][0]
+                            format(seq_id)).json()['results']
+
+        if info is None:
+            raise NonExistentSequence(
+                'Sequence with the ID {:d} was not found.'.format(seq_id))
+        else:
+            info = info[0]
 
         self.seq_id = info['number']
         self.name = info['name']
@@ -54,18 +64,18 @@ class Sequence(object):
 
         self.info = {
             'formula':
-            '\n'.join(info.get('formula', '')),
+                '\n'.join(info.get('formula', '')),
             'comments':
-            '\n'.join(info.get('comment', '')),
+                '\n'.join(info.get('comment', '')),
             'keywords':
-            info.get('keyword', '').split(','),
+                info.get('keyword', '').split(','),
             'author':
-            info.get('author', '').split(', ')[0][1:-1],
+                info.get('author', '').replace('_', ''),
             'created':
-            pendulum.parse(
-                info['created']).astimezone('utc').to_cookie_string(),
+                pendulum.parse(
+                    info['created']).astimezone('utc').to_cookie_string(),
             'url':
-            'https://oeis.org/A{:06d}'.format(info['number'])
+                'https://oeis.org/A{:06d}'.format(info['number'])
         }
 
     def __contains__(self, item):
@@ -107,6 +117,7 @@ class Sequence(object):
 
         seq_page = requests.get('https://oeis.org/A{0:d}/b{0:06d}.txt'.format(
             self.seq_id)).text.rstrip('\n').split('\n')
+        seq_page = filter(lambda x: not x.startswith('#'), seq_page)
         self.sequence = [int(item.split()[1]) for item in seq_page]
 
     def contains(self, item):
@@ -248,14 +259,13 @@ def query(terms, start = None, results = None):
     Returns a list of Sequence objects.
     """
 
-    terms = ','.join(map(str, terms))
-
     if start is None:
         start = 0
 
     if results is None:
         results = 10
 
+    terms = ','.join(map(str, terms))
     result = []
     search = requests.get(
         'https://oeis.org/search?fmt=json&q={0:s}&start={1:d}'.format(
