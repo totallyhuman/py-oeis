@@ -27,11 +27,15 @@ class IndexTooHighError(IndexError):
     """Raised when an index too high to handle is passed."""
 
 
+class EmptyQuery(ValueError):
+    """Raised when an empty list of query terms is passed."""
+
+
 class Sequence(object):
     """An object to represent a single OEIS sequence.
 
     Initializer arguments:
-        number (int): the OEIS sequence ID
+        seq_id (int): the OEIS sequence ID
 
     Instance attributes:
         seq_id (int): the OEIS sequence ID
@@ -245,10 +249,10 @@ class Sequence(object):
 
         return self.sequence[start:stop:step]
 
-
 def query(terms, start = None, results = None):
-    """Search the OEIS database for sequences that contain a specific set of
-    terms.
+    """Query the OEIS for sequences that match the terms.
+
+    See https://oeis.org/hints.html for more information.
 
     Positional arguments:
         terms (list): the terms to search for
@@ -259,17 +263,23 @@ def query(terms, start = None, results = None):
     Returns a list of Sequence objects.
     """
 
+    if not terms:
+        raise EmptyQuery('List of query terms passed is empty.')
+
     if start is None:
         start = 0
 
     if results is None:
         results = 10
 
-    terms = ','.join(map(str, terms))
+    terms = requests.utils.quote(' '.join(terms))
     result = []
     search = requests.get(
         'https://oeis.org/search?fmt=json&q={0:s}&start={1:d}'.format(
             terms, start)).json()['results']
+
+    if search is None:
+        return []
 
     for seq in search[:results]:  # search results :P
         result.append(Sequence(seq['number']))
