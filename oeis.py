@@ -6,10 +6,10 @@ py-oeis
 A Python library to access the OEIS (Online Encyclopedia of Integer Sequences).
 
 Sumant Bhaskaruni
-v1.2
+v1.3
 """
 
-__version__ = '1.2'
+__version__ = '1.3'
 
 import pendulum
 import requests
