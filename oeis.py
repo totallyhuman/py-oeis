@@ -199,7 +199,7 @@ class Sequence(object):
             raise NegativeIndexError(
                 'The index passed ({:d}) is negative.'.format(index))
 
-        if index > len(self):
+        if index >= len(self):
             # OEIS only holds values up to a certain limit
             raise IndexTooHighError('{0:d} is higher than the amount of '
                                     'values fetched ({1:d}).'.format(
@@ -248,6 +248,19 @@ class Sequence(object):
                                         stop, len(self)))
 
         return self.sequence[start:stop:step]
+
+    def first(self, items):
+        """Get the first n terms of the sequence. Raises an exception if n is
+        negative or too high.
+
+        Positional arguments:
+        items (int): the amount of terms to return
+
+        Returns a list of sequence items.
+        """
+
+        return self.subsequence(start = 0, stop = items)
+
 
 def query(terms, start = None, results = None):
     """Query the OEIS for sequences that match the terms.
