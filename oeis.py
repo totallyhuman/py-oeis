@@ -39,14 +39,16 @@ class Sequence(object):
 
     Instance attributes:
         seq_id (int): the OEIS sequence ID
-        name (str): the name of the sequence
         sequence (list): the first few values of the sequence
         info (dict): information pertaining to the sequence including:
+            name (str): the name of the sequence
             formula (str): the text of the 'Formula' section on OEIS
             comments (str): the text of the 'Comments' section on OEIS
+            example (str): the text of the 'Example' section on OEIS
+            crossrefs (str): the text of the 'Crossrefs' section on OEIS
             keywords (list): the keywords (tags) of the sequence
             author (str): the author of the sequence
-            created (str): when the sequence was created
+            created (float): when the sequence was created (epoch timestamp)
             url (str): the URL of the sequence on OEIS
     """
 
@@ -63,21 +65,26 @@ class Sequence(object):
             info = info[0]
 
         self.seq_id = info['number']
-        self.name = info['name']
         self.sequence = list(map(int, info['data'].split(',')))
 
         self.info = {
+            'name':
+                info['name'],
             'formula':
                 '\n'.join(info.get('formula', '')),
             'comments':
                 '\n'.join(info.get('comment', '')),
+            'example':
+                '\n'.join(info.get('example', '')),
+            'crossrefs':
+                '\n'.join(info.get('xref', '')),
             'keywords':
                 info.get('keyword', '').split(','),
             'author':
                 info.get('author', '').replace('_', ''),
             'created':
                 pendulum.parse(
-                    info['created']).astimezone('utc').to_cookie_string(),
+                    info['created']).astimezone('utc').timestamp(),
             'url':
                 'https://oeis.org/A{:06d}'.format(info['number'])
         }
@@ -98,19 +105,14 @@ class Sequence(object):
     def __len__(self):
         return len(self.sequence)
 
-    def __str__(self):
-        terms = ', '.join(map(str, self.sequence[:15]))
-        keywords = ''
-        for key in self.info['keywords']:
-            keywords += '[{:s}] '.format(key)
+    def __eq__(self, other):
+        if not isinstance(other, Sequence):
+            return False
 
-        return ('A{0:06d}: {1:s}\n'
-                'Terms: {2:s}...\n'
-                'Created: {3:s}\n'
-                'Keywords: {4:s}\n'
-                'Author: {5:s}').format(self.seq_id, self.name, terms,
-                                        self.info['created'], keywords,
-                                        self.info['author'])
+        return self.seq_id == other.seq_id
+
+    def __str__(self):
+        return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id, self.name)
 
     def __repr__(self):
         return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id, self.name)
