@@ -7,21 +7,21 @@ A Python library to access the OEIS (Online Encyclopedia of Integer Sequences).
 An object to represent a single OEIS sequence.
 
 Initializer arguments:
-    seq_id (int): the OEIS sequence ID
+-   seq_id (int): the OEIS sequence ID
 
 Instance attributes:
-    seq_id (int): the OEIS sequence ID
-    sequence (list): the first few values of the sequence
-    info (dict): information pertaining to the sequence including:
-        name (str): the name of the sequence
-        formula (str): the text of the 'Formula' section on OEIS
-        comments (str): the text of the 'Comments' section on OEIS
-        example (str): the text of the 'Example' section on OEIS
-        crossrefs (str): the text of the 'Crossrefs' section on OEIS
-        keywords (list): the keywords (tags) of the sequence
-        author (str): the author of the sequence
-        created (float): when the sequence was created (epoch timestamp)
-        url (str): the URL of the sequence on OEIS
+-   seq_id (int): the OEIS sequence ID
+-   sequence (list): the first few values of the sequence
+-   info (dict): information pertaining to the sequence including:
+    -   name (str): the name of the sequence
+    -   formula (str): the text of the 'Formula' section on OEIS
+    -   comments (str): the text of the 'Comments' section on OEIS
+    -   example (str): the text of the 'Example' section on OEIS
+    -   crossrefs (str): the text of the 'Crossrefs' section on OEIS
+    -   keywords (list): the keywords (tags) of the sequence
+    -   author (str): the author of the sequence
+    -   created (float): when the sequence was created (epoch timestamp)
+    -   url (str): the URL of the sequence on OEIS
 
 ### \_\_init\_\_
 
