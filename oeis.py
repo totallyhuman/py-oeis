@@ -256,7 +256,7 @@ class Sequence(object):
         negative or too high.
 
         Positional arguments:
-        items (int): the amount of terms to return
+            items (int): the amount of terms to return
 
         Returns a list of sequence items.
         """
