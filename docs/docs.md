@@ -23,12 +23,6 @@ Instance attributes:
     -   created (float): when the sequence was created (epoch timestamp)
     -   url (str): the URL of the sequence on OEIS
 
-### \_\_init\_\_
-
-`__init__(seq_id)`: 
-
-See class docstring for details.
-
 ### fetch\_sequence
 
 `fetch_sequence()`: 
@@ -133,10 +127,9 @@ Query the OEIS for sequences that match the terms.
 See https://oeis.org/hints.html for more information.
 
 Positional arguments:
-    terms (list): the terms to search for
-    start (int): how far down the list of results to return sequences from
-                 (default: 0)
-    results (int): how many sequences to return (default: 10)
+-   terms (list): the terms to search for
+-   start (int): how far down the list of results to return sequences from (default: 0)
+-   results (int): how many sequences to return (default: 10)
 
 Returns a list of Sequence objects.
 
