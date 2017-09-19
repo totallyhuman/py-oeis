@@ -7,7 +7,7 @@ with open('README.md', 'r') as f:
 
 setup(
     name = 'py-oeis',
-    version = '2.0',
+    version = '2.1',
     description = description,
     author = 'Sumant Bhaskaruni',
     author_email = 'bsumantb@gmail.com',
