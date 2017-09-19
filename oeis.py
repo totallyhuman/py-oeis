@@ -11,6 +11,7 @@ v2.0
 
 __version__ = '2.0'
 
+from collections import Iterable
 import pendulum
 import requests
 
@@ -95,6 +96,8 @@ class Sequence(object):
     def __getitem__(self, key):
         if isinstance(key, int):
             return self.nth_term(key)
+        elif isinstance(key, Iterable):
+            return self.index(key)
         elif isinstance(key, slice):
             return self.subsequence(key.start, key.stop, key.step)
 
@@ -112,10 +115,12 @@ class Sequence(object):
         return self.seq_id == other.seq_id
 
     def __str__(self):
-        return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id, self.name)
+        return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id,
+                                                     self.info['name'])
 
     def __repr__(self):
-        return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id, self.name)
+        return '<Sequence [A{0:06d}: {1:s}]>'.format(self.seq_id,
+                                                     self.info['name'])
 
     def fetch_sequence(self):
         """Fetch all the values of the sequence from OEIS. Only do this if you
@@ -208,6 +213,17 @@ class Sequence(object):
                                         index, len(self)))
 
         return self.sequence[index]
+
+    def index(self, index):
+        """Get the nth term of the sequence for every n in index. 0-indexed.
+
+        Positional arguments:
+            index (list): the list of integers to index
+
+        Returns a list of sequence elements.
+        """
+
+        return [self.nth_term(i) for i in index]
 
     def subsequence(self, start = None, stop = None, step = None):
         """Get a subsequence of the sequence. 0-indexed. Raises an exception if
